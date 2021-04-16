@@ -15,20 +15,28 @@ consumer = KafkaConsumer(
     sasl_plain_username='student',
     sasl_plain_password='nju2021',
 )
-path='E:\\tmpfile\\data3.txt'
+path='E:\\tmpfile\\kafka\\data'
 
 stop=False
 signal.signal(signal.SIGINT,keyboard_handler)
-with open(path,'a+',encoding = 'utf-8') as f:
+i=0
+index=90
+while True:
+    i=0
+    with open(path+str(index)+'.txt','a+',encoding = 'utf-8') as f:
 
-    # 多个 consumer 可以重复消费相同的日志，每个 consumer 只会消费到它启动后产生的日志，不会拉到之前的余量
-    for msg in consumer:
-        line = msg.value.decode("utf-8")
-        print('got:', line)
-        f.write(line+'\n')
-        #f.flush()
-        if not stop:
-            continue;
-        break;
+        # 多个 consumer 可以重复消费相同的日志，每个 consumer 只会消费到它启动后产生的日志，不会拉到之前的余量
+        for msg in consumer:
+            line = msg.value.decode("utf-8")
+            #print('got:', line)
+            f.write(line+'\n')
+            i+=1
+            #f.flush()
+            if not stop and i<10000:
+                continue;
+            break;
+    index+=1
+    print(str(index)+ "is done")
+    if(index>100):
+        break
 
-f.close()
