@@ -31,7 +31,7 @@ def getUrl(s:str):
 
 def getIPADDR(s:str):
 
-    searchObj = re.search(r"IPADDR ?= ?([0-1]+\.){3}[0-1]+", s)
+    searchObj = re.search(r"IPADDR ?= ?([0-9]+\.){3}[0-9]+", s)
     if(searchObj==None):
         return None,None;
     return splitEqual(searchObj.group())
@@ -54,13 +54,6 @@ def splitEqual(s:str):
     s=s.split("=")
     return preClean(s[0]),preClean(s[1])
 
-# def test(s:str):
-#     print(s)
-#     pattern=r"\\na"
-#     print(pattern)
-#     searchObject=re.search(pattern,s)
-#     print(searchObject.group())
-# test("\\na")
 
 def getPair(s:str):
     index=s.find(":")
@@ -73,15 +66,42 @@ def getPair(s:str):
     value=value[1:len(value)-1]
     return key,value
 
+
+def getSession(s:str):
+    searchObj = re.search(r"SESSIONID ?= ?[0-9a-zA-Z]+", s)
+    if(searchObj==None):
+        return None,None;
+    return splitEqual(searchObj.group())
+
 def getDic(s:str):
+    #ans={'s':s}
     ans={}
-    for i in [getUrl,getIPADDR,getTime,getRequestBody]:
+    for i in [getUrl,getIPADDR,getTime,getRequestBody,getSession]:
         key,value=i(s)
         if(key!=None):
             ans[key]=value
     return ans
 
+def getRealDic(d:dict):
+    ans={}
+    for key,value in d.items():
+
+        if key =="requestBody":
+
+            for tk,tv in value.items():
+                if tk not in ["password","authCode"]:
+                    ans[tk]=int(tv)
+
+        elif key=="SESSIONID":
+            key='sessionId'
+            ans[key]=value
+        else:
+            ans[key]=value
+
+    return ans
 
 s='got: [SESSIONID=9a183c12631dcde4cc5560a2599351ef] 2017-11-25 10:10:21 DEBUG [nio-8080-exec-1] com.some.taopao.aop.LogHandler : uri=/item/cart | requestBody={"userId" : "118675", "itemId" : "1668927", "categoryId" : "4444302"}';
-test=getDic(s)
+
+s2='[IPADDR=121.77.90.31] [SESSIONID=74b18c845189200b27dbdaf071394b58] 2017-11-25 09:57:10 DEBUG [nio-8080-exec-1] com.some.taopao.aop.LogHandler : uri=/user/login | requestBody = {"userId" : "294487", "password" : "c4783635a08de9160c181b31147ea362", "authCode" : "23cd0cb1489073b31ab96e3b3c2ce463", "success" : "1"}'
+test=getRealDic(getDic(s2))
 a=0

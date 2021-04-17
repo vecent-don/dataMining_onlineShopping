@@ -1,8 +1,10 @@
 import Util
+import pyMysql
 path='E:\\tmpfile\\data3.txt'
-
 dics=[]
 
+import time
+# start=time.clock()
 
 def findUrl():
     x=set()
@@ -14,7 +16,7 @@ def findUrl():
 def findBuy():
     x=list()
     for i in dics:
-        if(i['uri']=='/item/favor'):
+        if(i['uri']=='/item/buy'):
             x.append(i)
     for i in x:
         print(i)
@@ -35,9 +37,15 @@ with open(path,'r',encoding = 'utf-8') as f:
         i+=1
         if not line  :
             break
-        dics.append(Util.getDic(line))
-
-findBuy()
+        dics.append(Util.getRealDic(Util.getDic(line)))
 
 
+for i in dics:
+    # if i['uri']=='/item/buy':
+    #     a=0
+    pyMysql.callInsert(i['uri'],i)
 
+pyMysql.callInsert("",{},True)
+
+end=time.clock()
+# print("len: "+str(len(dics))+"time: "+str(end-start))
