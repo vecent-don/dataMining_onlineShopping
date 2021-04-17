@@ -16,7 +16,7 @@ def findUrl():
 def findBuy():
     x=list()
     for i in dics:
-        if(i['uri']=='/item/buy'):
+        if(i['uri']=='/item/favor'):
             x.append(i)
     for i in x:
         print(i)
@@ -29,23 +29,24 @@ def findDetail():
     for i in x:
         print(i)
 
-with open(path,'r',encoding = 'utf-8') as f:
-    i=0
-    # 多个 consumer 可以重复消费相同的日志，每个 consumer 只会消费到它启动后产生的日志，不会拉到之前的余量
-    while True:
-        line=f.readline()
-        i+=1
-        if not line  :
-            break
-        dics.append(Util.getRealDic(Util.getDic(line)))
 
-
-for i in dics:
-    # if i['uri']=='/item/buy':
-    #     a=0
-    pyMysql.callInsert(i['uri'],i)
-
-pyMysql.callInsert("",{},True)
-
-end=time.clock()
+# with open(path,'r',encoding = 'utf-8') as f:
+#     i=0
+#     # 多个 consumer 可以重复消费相同的日志，每个 consumer 只会消费到它启动后产生的日志，不会拉到之前的余量
+#     while True:
+#         line=f.readline()
+#         i+=1
+#         if not line  :
+#             break
+#         dics.append(Util.getRealDic(Util.getDic(line)))
+#
+# findBuy()
+# for i in dics:
+#     # if i['uri']=='/item/buy':
+#     #     a=0
+#     pyMysql.callInsert(i['uri'],i)
+#
+# pyMysql.callInsert("",{},True)
+#
+# end=time.clock()
 # print("len: "+str(len(dics))+"time: "+str(end-start))

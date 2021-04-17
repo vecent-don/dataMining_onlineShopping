@@ -51,7 +51,7 @@ def writeInRealTime():
     # 多个 consumer 可以重复消费相同的日志，每个 consumer 只会消费到它启动后产生的日志，不会拉到之前的余量
     for msg in consumer:
         line = msg.value.decode("utf-8")
-        print('got:', line)
+        #print('got:', line)
         dic=Util.getRealDic(Util.getDic(line))
         pyMysql.callInsert(dic['uri'],dic)
         if not stop:

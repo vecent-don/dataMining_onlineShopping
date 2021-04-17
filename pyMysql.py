@@ -16,6 +16,7 @@ sqldetail = '''INSERT INTO getDetail(sessionId ,date ,userId ,itemId, categoryId
 sqlbuy = '''INSERT INTO buy(sessionId ,date ,userId ,itemId, categoryId,isSecondKill,success) VALUES (%s,%s,%s,%s,%s,%s,%s)'''
 sqllogin = '''INSERT INTO login(sessionId ,date ,userId ,success,ipAddr) VALUES (%s,%s,%s,%s,%s)'''
 sqlcart = '''INSERT INTO cart(sessionId ,date ,userId ,itemId, categoryId) VALUES (%s,%s,%s,%s,%s)'''
+sqlfavor = '''INSERT INTO favor(sessionId ,date ,userId ,itemId, categoryId) VALUES (%s,%s,%s,%s,%s)'''
 
 
 #
@@ -28,15 +29,16 @@ sqlcart = '''INSERT INTO cart(sessionId ,date ,userId ,itemId, categoryId) VALUE
 # lbuy = []
 # llogin = []
 # lcart = []
-sql = [sqldetail, sqlbuy, sqllogin, sqlcart]
-counts = [0, 0, 0, 0]
-uris = ["/item/getDetail", "/item/buy", "/user/login", "/item/cart"]
+sql = [sqldetail, sqlbuy, sqllogin, sqlcart,sqlfavor]
+counts = [0, 0, 0, 0,0]
+uris = ["/item/getDetail", "/item/buy", "/user/login", "/item/cart","/item/favor"]
 t = ["(test['sessionId'], test['time'], test['userId'], test['itemId'], test['categoryId'])",
      "(test['sessionId'], test['time'], test['userId'], test['itemId'], test['categoryId'],test['isSecondKill'], test.get('success',0))",
      "(test['sessionId'], test['time'], test['userId'],  test['success'], test['IPADDR'])",
-     "(test['sessionId'], test['time'], test['userId'], test['itemId'], test['categoryId'])"
+     "(test['sessionId'], test['time'], test['userId'], test['itemId'], test['categoryId'])",
+        "(test['sessionId'], test['time'], test['userId'], test['itemId'], test['categoryId'])"
      ]
-l = [[], [], [], []]
+l = [[], [], [], [],[]]
 
 
 def insertMany(val:list,sql:str):
