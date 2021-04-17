@@ -1,3 +1,4 @@
++ data链接https://box.nju.edu.cn/f/e4d0f922ed914d58a01b/?dl=1
 + 在properties.txt里面写自己电脑上数据文件夹的路径,数据放在一个干净的文件里面,把文件夹绝对路径写在txt第一行
 + schema.sql是mysql的init脚本,右键执行就行了,但可能要配data source(和软工二一样),我下的是mysql for 5.1
 + 爆红的import,自行下对应的库就可以了,但是注意,mysql的库比较坑,要下mysql,也要下mysql-connector(这个库的下载不给提示的)
