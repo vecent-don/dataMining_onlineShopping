@@ -79,7 +79,7 @@ def callInsert(s:str,test:dict,flag:bool=False):
             counts[i] = 0
             print(uris[i] + " inserts")
             mydb.commit()
-            return
+        return
 
     for i in range(len(uris)):
         if s==uris[i]:
