@@ -13,14 +13,5 @@
       <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://121.4.125.198:3306/kfk</jdbc-url>
     </data-source>
-    <data-source source="LOCAL" name="@localhost" uuid="40aa5eed-7b62-43f3-be72-e24cc663060b">
-      <driver-ref>mysql.8</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://localhost:3306</jdbc-url>
-      <driver-properties>
-        <property name="serverTimezone" value="Hongkong" />
-      </driver-properties>
-    </data-source>
   </component>
 </project>

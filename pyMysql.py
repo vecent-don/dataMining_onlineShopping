@@ -88,6 +88,7 @@ def callInsert(s:str,test:dict,flag:bool=False):
     for i in range(len(uris)):
         if counts[i]>=batchSize:
             # try:
+            #l[i] is list, elements are tuples
             mycursor.executemany(sql[i],l[i])
             # except:
             #     x=0
