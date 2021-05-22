@@ -1,25 +1,29 @@
 import mysql.connector
 import pandas as pd
 import numpy as np
+
+mydb = mysql.connector.connect(
+    host="121.4.125.198",
+    user="6f",
+    passwd="6fengYYDS!",
+    database="kfk"
+)
+batch = 10000000
+epoch=8
+
+# batch = 10000
+# epoch = 4
 # mydb = mysql.connector.connect(
-#     host="121.4.125.198",
-#     user="6f",
-#     passwd="6fengYYDS!",
+#     host="localhost",
+#     user="root",
+#     passwd="123456",
 #     database="kfk"
 # )
 
-mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    passwd="123456",
-    database="kfk"
-)
 mycursor = mydb.cursor()
 
-#meta-meta,side=1,2,4
-def fb(s:str, n,times,side):
-    mycursor.execute(s)
-    data=pd.DataFrame(mycursor.fetchall(),dtype=np.float)
+#statistics analysis
+def getSuspects(data, n,times,side):
     c=data.iloc[:,n]
     mean=c.mean()
     variance=c.std()
@@ -33,7 +37,15 @@ def fb(s:str, n,times,side):
     robots=data.loc[x]
     print(mean,variance)
     print(robots)
+
     return robots.iloc[:,0]
+
+#meta-meta,side=1,2,4
+def fb(s:str, n,times,side):
+    mycursor.execute(s)
+    data=pd.DataFrame(mycursor.fetchall(),dtype=np.float)
+    robots=getSuspects(data, n,times,side)
+    return robots
 
 #meta 左右
 def findRobot(s:str, n):
@@ -41,6 +53,9 @@ def findRobot(s:str, n):
 #meta2 右
 def findRobot2(s:str, n):
     return fb(s,n,2,2)
+
+#A 行为分析
+#由于5表连接统计用户行为并不现实，于是使用预设值99%作为
 
 #B登录正确率过低，且尝试次数过多(超过10次)
 def getIP_LoginSuccessRateTooLow():
@@ -52,9 +67,10 @@ def getIP_LoginSuccessRateTooLow():
     z1=d>10
     mean=c.mean()
     variance=c.std()
-    x=c>(mean+2*variance)
+    # x=c>(mean+2*variance)
     y=c<(mean-2*variance)
-    z=(x|y)&(z1)
+    # z=(x|y)&(z1)
+    z=y
     robots=data.loc[z]
     print(robots)
     return robots.iloc[:,0]
@@ -121,14 +137,44 @@ def getIP_ToomanyUsersLoginAndSuccess():
 
 #I 1min 内用户请求数（简化为getDetail的数目）
 def getUser_getDetailTooFrequently():
+#     s='''select userId,date,count(*)
+#     from
+#         (select userId,DATE_FORMAT(date,'%Y-%m-%d %H:%i') as date
+#         from getDetail
+#         ) as x
+#     group by userId, date;'''
+#
+#     s2='''select userId,DATE_FORMAT(date,'%Y-%m-%d %H:%i') date,count(*)
+#         from getDetail
+#         group by userId, DATE_FORMAT(date,'%Y-%m-%d %H:%i');'''
+
+
     s='''select userId,date,count(*)
     from
         (select userId,DATE_FORMAT(date,'%Y-%m-%d %H:%i') as date
-        from getdetail
+        from getDetail
+        where id<={} and id>={} 
         ) as x
-    group by userId, date;'''
+    group by userId ,date;'''
     n=2
-    return findRobot2(s,n)
+    tmpFrame=pd.DataFrame(dtype=np.float)
+    for i in range(epoch):
+        low=i*batch
+        high=(i+1)*batch
+        sql=s. format(high,low)
+
+        mycursor.execute(sql)
+        tmpFrame=tmpFrame.append(mycursor.fetchall())
+        print("getDetailTooFrequently ",i," is finished")
+
+    tmpFrame.columns=['userId','date','count']
+    tmpFrame.groupby(['userId','date'])['count'].sum()
+    #print(tmpFrame)
+    ans=getSuspects(tmpFrame,n,2,2)
+    # print(ans)
+    return ans
+
+#getUser_getDetailTooFrequently()
 
 #J 偏好某类category，j在逻辑上存在问题，舍去
 def getUser_preferSpecificCategory():
@@ -138,31 +184,37 @@ def getUser_preferSpecificCategory():
 
 def getUser_getDetailTooMuch():
     s='''select userId,count(*) as num
-    from getdetail
+    from getDetail
     group by userId;'''
     n=1
     return findRobot2(s,n)
 
+
 # 通过IP获得UserId
 def ip2userId(l):
-    # l = getIP_ToomanyUsersLoginAndSuccess().tolist()
-    l=['106.80.115.90']
+    l = getIP_ToomanyUsersLoginAndSuccess().tolist()
+    #l=['106.80.115.90']
     s='''select userId
     from login
-    where ipAddr=%s ;'''
+    where ipAddr=(%s) ;'''
     ans=pd.DataFrame(dtype=np.float)
+
     for i in l:
         mycursor.execute(s,[i])
-        ans=pd.DataFrame(mycursor.fetchall())
-       # ans.append(mycursor.fetchall())
-    print(ans)
+        tmp=pd.DataFrame(mycursor.fetchall())
+        ans=ans.append(tmp)
 
-ip2userId([])
+    ans=ans.drop_duplicates().iloc[:,0].astype(np.float)
+    return ans
+
+
 
 
 #获取四类robot
 
-#1
+#1撞库机器人
+def pwdRobot():
+    return
 
 #C无效，因此只使用D，E
 #2  抢单机器人 D&E
@@ -183,8 +235,32 @@ def scaplingRobot():
 
 #4 爬虫机器人 K&H&I (&J)
 def crawlerRobot():
+    r2 = getUser_getDetailTooFrequently()
     r1=getUser_getDetailTooMuch()
     ip1=getIP_ToomanyUsersLoginAndSuccess()
-    r2=getUser_getDetailTooFrequently()
+    # r1=[]
+    # ip1=[]
+    r3=ip2userId(ip1)
 
+    r4=pd.merge(r1,r2)
+    r4=pd.merge(r4,r3)
+    tagRobot(r4)
+    print(r4)
+    return r4
+crawlerRobot()
+def tagRobot(robots):
+    sql='''
+    update getDetail set getDetail.isRebot=1 where userId=%s;
+    '''
+    sql2='''update buy set buy.isRebot=1 where userId=%s;
+    '''
+    # sql3='''update buy set buy.isRebot=0 where userId=736721.0;'''
+    #
+    # mycursor.execute(sql3)
+    # mydb.commit()
+    for i in robots.iterrows():
+        t=i[1][0]
+        mycursor.execute(sql,[t])
+        mycursor.execute(sql2, [t])
+    mydb.commit()
 
