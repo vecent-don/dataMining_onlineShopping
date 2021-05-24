@@ -10,3 +10,23 @@
 
 robot 文件里面是找机器人的文件
 4个函数在最下面，都是以*robot()命名
+
++ 获得所有潜在的机器人
+    + 撞库机器人
+        +  pwdRobot()
+        +  函数返回所有的可疑IP
+    + 抢单机器人
+        +   orderGrabingRobot()
+        +   返回可疑的UserId
+    +  刷单机器人、
+        +   scaplingRobot()
+        +   返回可疑的UserId
+    +   爬虫机器人
+        +   crawlerRobot()
+        +   返回可疑的UserId，默认会回打tag
++ 附加选项
+    + 将可疑IP传入ip2userId(l)函数，会获得该IP下访问过的所有用户
+    + 将可疑Ip传入tagRobot,会在buy和getDetail表中标注的机器人
+    + robot.py函数的最上, batch，epoch1，epoch为3个超参数，因为getDeta表过大了
+      区间为（epoch1\*batch，epoch\*batch）
+      也许你希望限制单次查询的范围,例如batch = 1000000，epoch1=0，epoch=1 的组合即意味着会查询 (0\*1000000,1\*1000000)区间内的数据
