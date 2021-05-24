@@ -8,8 +8,9 @@ mydb = mysql.connector.connect(
     passwd="6fengYYDS!",
     database="kfk"
 )
-batch = 10000000
-epoch=8
+batch = 1000000
+epoch1=0
+epoch=1   #8
 
 # batch = 10000
 # epoch = 4
@@ -56,6 +57,7 @@ def findRobot2(s:str, n):
 
 #A 行为分析
 #由于5表连接统计用户行为并不现实，于是使用预设值99%作为
+
 
 #B登录正确率过低，且尝试次数过多(超过10次)
 def getIP_LoginSuccessRateTooLow():
@@ -158,7 +160,7 @@ def getUser_getDetailTooFrequently():
     group by userId ,date;'''
     n=2
     tmpFrame=pd.DataFrame(dtype=np.float)
-    for i in range(epoch):
+    for i in range(epoch1,epoch):
         low=i*batch
         high=(i+1)*batch
         sql=s. format(high,low)
@@ -170,7 +172,8 @@ def getUser_getDetailTooFrequently():
     tmpFrame.columns=['userId','date','count']
     tmpFrame.groupby(['userId','date'])['count'].sum()
     #print(tmpFrame)
-    ans=getSuspects(tmpFrame,n,2,2)
+    tmpFrame.columns=[0,1,2]
+    ans=getSuspects(tmpFrame,n,2,2).astype(np.float)
     # print(ans)
     return ans
 
@@ -185,9 +188,20 @@ def getUser_preferSpecificCategory():
 def getUser_getDetailTooMuch():
     s='''select userId,count(*) as num
     from getDetail
+    where id>={} and id<={} 
     group by userId;'''
+    tmpFrame = pd.DataFrame(dtype=np.float)
+    for i in range(epoch1,epoch):
+        low=i*batch
+        high=(i+1)*batch
+        sql=s.format(low,high)
+        mycursor.execute(sql)
+        tmpFrame = tmpFrame.append(mycursor.fetchall())
+        print("getDetailTooMuch", i, " is finished")
+
     n=1
-    return findRobot2(s,n)
+    ans = getSuspects(tmpFrame, n, 2, 2).astype(np.float)
+    return ans
 
 
 # 通过IP获得UserId
@@ -207,14 +221,35 @@ def ip2userId(l):
     ans=ans.drop_duplicates().iloc[:,0].astype(np.float)
     return ans
 
+def tagRobot(robots):
+    sql='''
+    update getDetail set getDetail.isRebot=1 where userId=%s;
+    '''
+    sql2='''update buy set buy.isRebot=1 where userId=%s;
+    '''
+    # sql3='''update buy set buy.isRebot=0 where userId=736721.0;'''
+    #
+    # mycursor.execute(sql3)
+    # mydb.commit()
+    for i in robots.iterrows():
+        t=i[1][0]
+        mycursor.execute(sql,[t])
+        mycursor.execute(sql2, [t])
+    mydb.commit()
+
 
 
 
 #获取四类robot
 
-#1撞库机器人
+#1撞库机器人 B
+#没有道理封杀用户，所以只返回IP
 def pwdRobot():
-    return
+
+    r1=getIP_LoginSuccessRateTooLow()
+
+    return r1
+#pwdRobot()
 
 #C无效，因此只使用D，E
 #2  抢单机器人 D&E
@@ -235,32 +270,19 @@ def scaplingRobot():
 
 #4 爬虫机器人 K&H&I (&J)
 def crawlerRobot():
+    print("---------------crawler------------------")
     r2 = getUser_getDetailTooFrequently()
     r1=getUser_getDetailTooMuch()
     ip1=getIP_ToomanyUsersLoginAndSuccess()
     # r1=[]
     # ip1=[]
+    print("----------------IPing-------------------")
     r3=ip2userId(ip1)
-
+    print("----------------tagging-----------------")
     r4=pd.merge(r1,r2)
     r4=pd.merge(r4,r3)
     tagRobot(r4)
     print(r4)
     return r4
 crawlerRobot()
-def tagRobot(robots):
-    sql='''
-    update getDetail set getDetail.isRebot=1 where userId=%s;
-    '''
-    sql2='''update buy set buy.isRebot=1 where userId=%s;
-    '''
-    # sql3='''update buy set buy.isRebot=0 where userId=736721.0;'''
-    #
-    # mycursor.execute(sql3)
-    # mydb.commit()
-    for i in robots.iterrows():
-        t=i[1][0]
-        mycursor.execute(sql,[t])
-        mycursor.execute(sql2, [t])
-    mydb.commit()
 
