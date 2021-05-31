@@ -13,6 +13,7 @@ epoch1=0
 epoch=1   #8
 
 # batch = 10000
+# epoch1=0
 # epoch = 4
 # mydb = mysql.connector.connect(
 #     host="localhost",
@@ -56,7 +57,7 @@ def findRobot2(s:str, n):
     return fb(s,n,2,2)
 
 #A 行为分析
-#由于5表连接统计用户行为并不现实，于是使用预设值99%作为
+#A.废弃 由于5表连接统计用户行为并不现实，本特征分析转由用户行为分析同学在该部分实现
 
 
 #B登录正确率过低，且尝试次数过多(超过10次)
@@ -284,5 +285,11 @@ def crawlerRobot():
     tagRobot(r4)
     print(r4)
     return r4
-crawlerRobot()
+# pwdRobot()
+#
+# orderGrabingRobot()
+#
+# scaplingRobot()
+#
+# crawlerRobot()
 
